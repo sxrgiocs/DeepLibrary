@@ -20,28 +20,17 @@ class UNet(nn.Module):
     filter_factor : float
         Factor to adjust the number of filters in each layer. Defaults to 1,
         keeping the same number of filters as in the paper by Ronneberger.
-
-    Attributes
-    ----------
-    encoder : torch.nn.Sequential
-        Encoder path of the U-Net.
-    bottleneck : DoubleConv
-        Bottleneck layer of the U-Net.
-    decoder : nn.Sequential
-        Decoder path of the U-Net.
-    out : Out
-        Output layer of the U-Net.
     """
 
     def __init__(self, in_channels, n_classes, filter_factor=1):
         super(UNet, self).__init__()
 
         filters = [64, 128, 256, 512]
-        filters = [int(f * filter_factor) for f in filters]
+        filters = [int(f // filter_factor) for f in filters]
 
-        self.encoder = self._create_encoder(in_channels, filters)
+        self.encoder = self._encoder(in_channels, filters)
         self.bottleneck = DoubleConv(filters[-1], filters[-1] * 2)
-        self.decoder = self._create_decoder(filters)
+        self.decoder = self._decoder(filters)
         self.out = Out(filters[0], n_classes)
 
     def forward(self, x):
@@ -57,7 +46,8 @@ class UNet(nn.Module):
         -------
         out : torch.Tensor
             Output tensor representing the segmentation prediction. It is
-            a probabilistic segmentation since Softmax function is applied.
+            a probabilistic segmentation since either a Sigmoid or Softmax
+            function is applied.
 
         """
 
@@ -76,9 +66,9 @@ class UNet(nn.Module):
 
         return out
 
-    def _create_encoder(self, in_channels, filters):
+    def _encoder(self, in_channels, filters):
         """
-        Function uses to create the encoder path of the U-Net. It takes a list
+        Function used to create the encoder path of the U-Net. It takes a list
         containing the number of features as an input argument, iterates
         through it and appends each encoder layer to an empty list. Then, the
         list is used to create a torch.nn.Sequential object that can be used in
@@ -109,7 +99,7 @@ class UNet(nn.Module):
 
         return encoder
 
-    def _create_decoder(self, filters):
+    def _decoder(self, filters):
         """
         Function uses to create the decoder path of the U-Net. It takes a list
         containing the number of features as an input argument, iterates
