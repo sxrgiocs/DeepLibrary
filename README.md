@@ -1,4 +1,4 @@
-# Deep Zoo
+# DeepZoo
 
 DeepZoo is a repository that contains (or will contain) a collection of deep
 learning networks, metrics, and losses for various tasks. The goal of this
