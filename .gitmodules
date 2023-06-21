@@ -1,6 +1,3 @@
-[submodule "Utils"]
-	path = Utils
-	url = git@github.com:sxrgiocs/PyUtils.git
 [submodule "utils"]
 	path = utils
 	url = git@github.com:sxrgiocs/PyUtils.git
