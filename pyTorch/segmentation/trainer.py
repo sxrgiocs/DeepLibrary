@@ -4,11 +4,55 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from src.utils.misc_utils import convert_seconds, get_class_name
-from Metrics.DiceCoefficient import DiceCoefficient
+from utils.convert_seconds import convert_seconds
+from utils.get_class_name import get_class_name
+from pyTorch.segmentation.metrics.dice import DiceCoefficient
 
 
 class SegmentationTrainer(nn.Module):
+    """
+    Trainer for semantic segmentation models.
+
+    Parameters
+    ----------
+    model : nn.Module
+        The segmentation model.
+    classes : int
+        The number of output classes.
+    loss : nn.Module, optional
+        The loss function used for training. Defaults to None.
+    metric : nn.Module, optional
+        The evaluation metric used for training. Defaults to None.
+    optimizer : torch.optim.Optimizer, optional
+        The optimizer used for training. Defaults to None.
+    learning_rate : float, optional
+        The learning rate used by the optimizer. Defaults to 1e-4.
+
+    Attributes
+    ----------
+    device : torch.device
+        Device on which the model and tensors will be placed ('cuda' or 'cpu').
+    model : nn.Module
+        Segmentation model.
+    classes : int
+        Number of output classes.
+    criterion : nn.Module
+        Loss function used for training and evaluation.
+    metric : nn.Module
+        Evaluation metric.
+    optimizer : torch.optim.Optimizer
+        Optimizer used for training.
+    learning_rate : float
+        The learning rate used by the optimizer.
+    scheduler : torch.optim.lr_scheduler._LRScheduler or None
+        Learning rate scheduler used for training.
+    params : dict
+        Dictionary containing the training parameters.
+    state_dicts : dict
+        Dictionary containing the state dicts of the model, optimizer, and
+        scheduler (if exists).
+    """
+
     def __init__(self, model, classes, loss=None, metric=None, optimizer=None, learning_rate=1e-4):
         super(SegmentationTrainer, self).__init__()
 
@@ -49,6 +93,27 @@ class SegmentationTrainer(nn.Module):
                             'scheduler': None}
 
     def fit(self, trainloader, validloader, epochs):
+        """
+        Trains the segmentation model on the provided training data for the
+        specified number of epochs.
+
+        Parameters
+        ----------
+        trainloader : torch.utils.data.DataLoader
+            DataLoader containing the training dataset.
+        validloader : torch.utils.data.DataLoader
+            DataLoader containing the validation dataset.
+        epochs : int
+            The number of epochs to train the model.
+
+        Returns
+        -------
+        tr_loss : np.ndarray
+            Training loss per epoch. Has shape [1, number of epochs]
+        val_loss : np.ndarray
+            Validation loss per epoch. Has shape [1, number of epochs]
+        """
+
         # Define empty arrays to store the losses during training
         tr_loss = np.zeros(epochs)
         val_loss = np.zeros(epochs)
@@ -164,6 +229,31 @@ class SegmentationTrainer(nn.Module):
         return tr_loss, val_loss
 
     def evaluate(self, testloader, classwise=True, save_segmentations=False, save_path=None):
+        """
+        Evaluates the trained segmentation model on the provided test data.
+
+        Parameters
+        ----------
+        testloader : torch.utils.data.DataLoader
+            DataLoader containing the test dataset.
+        classwise : bool, optional
+            Determines whether to compute and return the evaluation metrics
+            classwise or as an average. Defaults to True.
+        save_segmentations : bool, optional
+            Determines whether to save the predicted segmentations. Defaults to
+            False.
+        save_path : str or None, optional
+            The path to save the predicted segmentations. Required if
+            `save_segmentations` is True. Defaults to None.
+
+        Returns
+        -------
+        loss : float
+            Evaluation loss.
+        metric : float
+            Evaluation metric.
+        """
+
         # Define empty arrays to store the loss during evaluation
         eval_loss = 0.
 
@@ -221,12 +311,41 @@ class SegmentationTrainer(nn.Module):
         return loss, metric
 
     def save(self, path, best=False):
-        torch.save(self.state_dicts, path)
+        """
+        Saves the current state of the segmentation trainer.
+
+        Parameters
+        ----------
+        path : str
+            The path to save the state.
+        best : bool, optional
+            Determines whether to save the best state (if True) or the
+            current state (if False). Defaults to False.
+
+        Returns
+        -------
+        None
+        """
 
     def load(self, path):
+        """
+        Loads the state of the segmentation trainer from a saved checkpoint.
+
+        Parameters
+        ----------
+        path : str
+            The path to the saved checkpoint.
+
+        Returns
+        -------
+        self : SegmentationTrainer
+            The loaded SegmentationTrainer object.
+        """
+
         checkpoint = torch.load(path)
         self.load_state_dict(checkpoint['model'])
         self.optimizer.load_state_dict(checkpoint['optimizer'])
+
         if self.scheduler is not None:
             self.scheduler.load_state_dict(checkpoint['scheduler'])
 

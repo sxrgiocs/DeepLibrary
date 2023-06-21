@@ -22,6 +22,27 @@ class UNet(nn.Module):
     filter_factor : float
         Factor to adjust the number of filters in each layer. Defaults to 1,
         keeping the same number of filters as in the paper by Ronneberger.
+
+    Attributes
+    ----------
+    encoder : nn.Sequential
+        Encoder module responsible for downsampling the input image.
+    bottleneck : DoubleConv
+        Bottleneck module representing the central part of the U-Net.
+    decoder : nn.Sequential
+        Decoder module responsible for upsampling and recovering the spatial
+        resolution.
+    out : Out
+        Output module that produces the final segmentation prediction.
+
+    Methods
+    -------
+    forward(x)
+        Forward pass of the U-Net model.
+    _encoder(in_channels, filters)
+        Function used to create the encoder path of the U-Net
+    _decoder(filters)
+        Function used to create the decoder path of the U-Net
     """
 
     def __init__(self, in_channels, n_classes, filter_factor=1):
@@ -50,7 +71,6 @@ class UNet(nn.Module):
             Output tensor representing the segmentation prediction. It is
             a probabilistic segmentation since either a Sigmoid or Softmax
             function is applied.
-
         """
 
         # Create an empty list to store the encoders for the skip-connections

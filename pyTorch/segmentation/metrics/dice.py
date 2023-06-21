@@ -3,12 +3,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class DiceLoss(nn.Module):
+class DiceCoefficient(nn.Module):
     """
-    Dice loss for either binary or multiclass segmentation tasks.
-    It uses the original formulation 1 - D with D = 2*|X, Y| / (|X|+|Y|) with X
-    being the prediction probabilities and Y being the ground truth/target
-    probabilities.
+    Dice coefficient for either binary or multiclass segmentation tasks.
+    It uses the original formulation D = 2*|X, Y| / (|X|+|Y|) with X being the
+    prediction probabilities and Y being the ground truth/target probabilities.
 
     Parameters
     ----------
@@ -21,17 +20,30 @@ class DiceLoss(nn.Module):
         Boolean parameter used to choose whether or not to return the DICE loss
         per class instead of the averaged loss, which can be useful to analyze
         per-class performance. Defaults to False.
+
+    Attributes
+    ----------
+    Same as the parameters.
+
+    Methods
+    -------
+    forward(inputs, targets, logits=False)
+        Compute the Dice coefficient.
     """
 
     def __init__(self, num_classes, epsilon=1e-5, classwise=False):
-        super(DiceLoss, self).__init__()
+        super(DiceCoefficient, self).__init__()
         self.num_classes = num_classes
         self.epsilon = epsilon
         self.classwise = classwise
 
     def forward(self, inputs, targets, logits=False):
         """
-        Compute the Dice loss.
+        The forward method computes the Dice coefficient given the predicted
+        inputs and target labels. If the inputs are logits, they are converted
+        to probabilities using sigmoid for binary problems and softmax for
+        multiclass problems. The coefficient is then computed per class and
+        averaged across all classes and batches.
 
         Parameters
         ----------
@@ -45,8 +57,8 @@ class DiceLoss(nn.Module):
 
         Returns
         -------
-        dice_loss : torch.Tensor
-            Dice loss.
+        dice : torch.Tensor
+            Dice coefficient.
         """
 
         # Convert the inputs to probabilities if they are logits
@@ -75,13 +87,8 @@ class DiceLoss(nn.Module):
         # Compute Dice loss per class
         dice_per_class = (numerator + self.epsilon) / (denominator + self.epsilon)
 
-        # Average Dice loss across all classes and batches
-        dice_loss_per_class = 1 - dice_per_class
-
         # Choose whether or not to return the loss per class
-        if self.classwise:
-            dice_loss = torch.mean(dice_loss_per_class, dim=0)
-        else:
-            dice_loss = torch.mean(dice_loss_per_class)
+        dice_coef = torch.mean(
+            dice_per_class, dim=0) if self.classwise else torch.mean(dice_per_class)
 
-        return dice_loss
+        return dice_coef

@@ -25,6 +25,11 @@ class SingleConv(nn.Module):
         'e' (ELU), 'r' (ReLU). Defaults to 'l' (LeakyReLU).
     is3d : bool
         Specifies whether to use 3D convolution or 2D convolution.
+
+    Methods
+    -------
+    forward(x)
+        Forward pass
     """
 
     def __init__(self, in_channels, out_channels, k_size=3, stride=1, pad=1,
@@ -98,6 +103,11 @@ class DoubleConv(nn.Module):
         'e' (ELU), 'r' (ReLU). Defaults to 'l' (LeakyReLU).
     is3d : bool
         Specifies whether to use 3D convolution or 2D convolution.
+
+    Methods
+    -------
+    forward(x)
+        Forward pass
     """
 
     def __init__(self, in_channels, out_channels, k_size=3, stride=1, pad=1, is3d=True):
@@ -142,6 +152,11 @@ class Down(nn.Module):
         Number of output channels.
     is3d : bool
         Specifies whether to use 3D convolution or 2D convolution.
+
+    Methods
+    -------
+    forward(x)
+        Forward pass
     """
 
     def __init__(self, in_channels, out_channels, is3d=True):
@@ -189,6 +204,11 @@ class Up(nn.Module):
         Number of output channels.
     is3d : bool
         Specifies whether to use 3D convolution or 2D convolution.
+
+    Methods
+    -------
+    forward(x)
+        Forward pass
     """
 
     def __init__(self, in_channels, out_channels, is3d=True):
@@ -263,6 +283,11 @@ class Out(nn.Module):
         Number of output channels.
     is3d : bool
         Specifies whether to use 3D convolution or 2D convolution.
+
+    Methods
+    -------
+    forward(x)
+        Forward pass
     """
 
     def __init__(self, in_channels, out_channels, is3d=True):
