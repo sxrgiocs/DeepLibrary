@@ -63,12 +63,12 @@ class SegmentationTrainer(nn.Module):
         self.model = model.to(self.device)
         self.classes = classes
 
-        # Default arguments
+        # Default attributes
         default_loss = nn.BCELoss() if classes == 2 else nn.CrossEntropyLoss()
         default_metric = DiceCoefficient(num_classes=self.classes)
         default_optimizer = torch.optim.AdamW(self.model.parameters(), lr=learning_rate)
 
-        # Define training arguments
+        # Define training attributes
         self.criterion = loss if loss is not None else default_loss
         self.metric = metric if metric is not None else default_metric
         self.optimizer = optimizer if optimizer is not None else default_optimizer
