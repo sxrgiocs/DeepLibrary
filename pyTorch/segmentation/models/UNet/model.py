@@ -5,7 +5,7 @@ from modules import DoubleConv, Down, Up, Out
 class UNet(nn.Module):
     """
     3D U-Net model for semantic segmentation. Based on the original paper by
-    Ronneberger et al. https://arxiv.org/abs/1505.04597. Works for both 3D and
+    Ronneberger et al. https://arxiv.org/abs/1505.04597. Works for both 2D and
     3D images. The network is composed by 4 encoder filters which encode the
     input image, one bottleneck layer to reduce dimensionality and 4 decoder
     layers to produce the segmentation. The architecture is designed such as
